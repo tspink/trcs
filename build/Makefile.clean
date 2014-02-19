@@ -1,0 +1,43 @@
+#
+# Makefile.clean
+#
+__clean:
+PHONY += __clean
+
+# Normalise the source directory.
+obj-dir			:= $(obj)
+src-dir			:= $(obj)
+builtin-target		:= $(obj-dir)/$(builtin-name)
+
+# Initialise build vars.
+obj-y :=
+obj-m :=
+lib-y :=
+lib-m :=
+
+subdir-y :=
+subdir-m :=
+
+# Include source makefile.
+-include $(src-dir)/Makefile
+
+# Include makefile library.
+-include $(build-dir)/Makefile.lib
+
+clean-subdirs-y 	:= $(patsubst %,__clean__%, $(subdir-ym))
+clean-objs-y		:= $(patsubst %,__clean__%, $(real-objs-y) $(builtin-target) $(multi-used-m) $(multi-used-y))
+clean-objs-m		:= $(patsubst %,__clean__%, $(real-objs-m))
+clean-deps-y		:= $(patsubst %,__clean__%, $(dep-y))
+
+$(clean-objs-y) $(clean-objs-m) $(clean-deps-y): .FORCE
+#$(Q)$(ECHO) "  RM      $(patsubst $(obj-dir)/%,%,$(patsubst __clean__%,%,$@))"
+	$(Q)$(RM) -f $(patsubst __clean__%,%,$@)
+
+$(clean-subdirs-y): .FORCE
+	$(Q)$(ECHO) "  CLEAN   $(patsubst __clean__$(source-dir)/%,%,$@)"
+	$(Q)$(MAKE) $(clean)=$(patsubst __clean__%,%,$@)
+	
+__clean: $(clean-objs-y) $(clean-objs-m) $(clean-subdirs-y) $(clean-deps-y) .FORCE
+
+.FORCE:
+.PHONY: $(PHONY) .FORCE

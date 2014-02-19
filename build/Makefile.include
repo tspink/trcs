@@ -1,0 +1,12 @@
+#
+# Makefile.include
+#
+export builtin-name		:= built-in.o
+export build-config-file 	:= $(TOPDIR)/.config
+
+export null-cmd	:= @echo > /dev/null
+
+# Target Operations
+export build	:= -f $(build-dir)/Makefile.build obj
+export clean	:= -f $(build-dir)/Makefile.clean obj
+export debug	:= -f $(build-dir)/Makefile.dbg obj

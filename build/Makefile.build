@@ -1,0 +1,117 @@
+#
+# Makefile.build
+#
+__build:
+PHONY += __build
+
+# Normalise the source directory.
+obj-dir			:= $(obj)
+src-dir			:= $(obj)
+
+# Initialise build vars.
+obj-y :=
+obj-m :=
+lib-y :=
+lib-m :=
+
+dep-y :=
+
+asflags-y  :=
+ccflags-y  :=
+cxxflags-y :=
+ldflags-y  :=
+
+targets :=
+subdir-y :=
+subdir-m :=
+
+# Include source makefile.
+-include $(src-dir)/Makefile
+
+# Include makefile library.
+include $(build-dir)/Makefile.lib
+
+# Add include dir to cflags
+ccflags-y += -I$(inc-dir) $(EXTRA_CC_FLAGS)
+cxxflags-y += -I$(inc-dir) $(EXTRA_CXX_FLAGS)
+
+ifneq ($(strip $(lib-y) $(lib-m) $(lib-n) $(lib-)),)
+lib-target := $(obj-dir)/lib.a
+endif
+
+ifneq ($(strip $(obj-y) $(obj-m) $(obj-n) $(obj-) $(subdir-m) $(lib-target)),)
+builtin-target := $(obj-dir)/$(builtin-name)
+endif
+
+__build: $(builtin-target) $(lib-target) $(obj-m) $(subdir-ym) $(dep-y)
+	@:
+
+$(real-objs-m): part-of-module := y
+
+modname = $(basetarget)
+
+#$(multi-objs-m)         : modname = $(modname-multi)
+#$(multi-objs-y)         : modname = $(modname-multi)
+
+$(obj-dir)/%.o: $(src-dir)/%.c $(obj-dir)/%.d
+	$(Q)$(ECHO) "  CC      $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(CC) -c -o $@ $(ccflags-y) $($(basename $(notdir $@))-ccflags-y) $<
+
+$(obj-dir)/%.o: $(src-dir)/%.cpp $(obj-dir)/%.d
+	$(Q)$(ECHO) "  C++     $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(CXX) -c -o $@ $(cxxflags-y) $($(basename $(notdir $@))-cxxflags-y) $<
+
+$(obj-dir)/%.o: $(src-dir)/%.S $(obj-dir)/%.d
+	$(Q)$(ECHO) "  AS      $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(CC) -c -o $@ $(asflags-y) $($(basename $(notdir $@))-asflags-y) $<
+
+$(obj-dir)/%.d: $(src-dir)/%.c
+	$(Q)$(ECHO) "  DEP     $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(CC) -M -MT $(subst .d,.o,$@) -o $@ $(ccflags-y) $<
+
+$(obj-dir)/%.d: $(src-dir)/%.cpp
+	$(Q)$(ECHO) "  DEP     $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(CXX) -M -MT $(subst .d,.o,$@) -o $@ $(cxxflags-y) $<
+
+$(obj-dir)/%.d: $(src-dir)/%.S
+	$(Q)$(ECHO) "  DEP     $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(CC) -M -MT $(subst .d,.o,$@) -o $@ $(asflags-y) $<
+	
+#$(single-used-m): $(obj-dir)/%.o: $(src-dir)/%.c
+#$(single-used-m): $(obj-dir)/%.o: $(src-dir)/%.cpp
+
+$(sort $(subdir-obj-y)): $(subdir-ym) ;
+
+link_multi_deps =                     \
+$(filter $(addprefix $(obj)/,         \
+$($(subst $(obj)/,,$(@:.o=-objs)))    \
+$($(subst $(obj)/,,$(@:.o=-y)))), $^)
+ 
+$(multi-used-y) : %.o: $(multi-objs-y)
+	$(Q)$(ECHO) "  LD      $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(LD) -r -o $@ $(link_multi_deps)
+
+$(multi-used-m) : %.o: $(multi-objs-m)
+	$(Q)$(ECHO) "  LD [M]  $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(LD) -r -o $@ $(link_multi_deps)
+
+ifdef lib-target
+$(lib-target): $(lib-y)
+	ar rcs -o $@ $^
+endif
+
+ifdef builtin-target
+$(builtin-target): $(obj-y)
+	$(Q)$(ECHO) "  LD      $(patsubst $(source-dir)/%,%,$@)"
+	$(Q)$(LD) -r -o $@ $^
+endif
+
+PHONY += $(subdir-ym)
+$(subdir-ym):
+	$(Q)$(MAKE) $(build)=$@
+
+# Phony Targets
+.FORCE:
+.PHONY: $(PHONY) .FORCE
+
+-include $(dep-y)
