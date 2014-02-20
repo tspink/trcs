@@ -13,8 +13,8 @@ debug:		default-debug
 PHONY := all default clean debug
 
 # Basic Variables
-export EXTRA_CC_FLAGS	:= -Wall -g -O0 -nostdlib
-export EXTRA_CXX_FLAGS	:= -Wall -g -O0 -nostdlib
+export EXTRA_CC_FLAGS	:= -Wall -g -O0 -nostdlib -fno-builtin
+export EXTRA_CXX_FLAGS	:= -Wall -g -O0 -nostdlib -fno-builtin
 export EXTRA_LD_FLAGS	:= -nostdlib
 
 # Directories

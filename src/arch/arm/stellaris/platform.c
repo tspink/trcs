@@ -9,9 +9,11 @@
 #include <arch/platform/cortex-m4.h>
 #include <arch/platform/stellaris.h>
 #include <kernel/mm.h>
+#include <kernel/printk.h>
 
 void platform_mem_init()
 {
+    printk("stellaris: installing memory regions\n");
     mm_add_region(MEM_CODE_BASE, MEM_CODE_SIZE, MEM_REGION_TYPE_CODE, "code");
 }
 

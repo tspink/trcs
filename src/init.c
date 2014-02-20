@@ -4,6 +4,7 @@
  * Copyright (C) Tom Spink 2014 <tspink@gmail.com>
  * All Rights Reserved
  */
+#include <kernel/printk.h>
 #include <kernel/cpu.h>
 #include <kernel/mm.h>
 #include <kernel/irq.h>
@@ -11,6 +12,8 @@
 
 void trcs_boot()
 {
+    printk("trcs: starting boot\n");
+    
     // Initialise CPU
     cpu_init();
     

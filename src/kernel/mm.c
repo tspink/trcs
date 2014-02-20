@@ -1,4 +1,5 @@
 #include <kernel/mm.h>
+#include <kernel/printk.h>
 #include <kernel/panic.h>
 
 static struct mem_region regions[8];
@@ -16,6 +17,8 @@ void mm_add_region(unsigned int base, unsigned int size, enum mem_region_type ty
 
 void mm_init()
 {
+    printk("mm: init\n");
+    
     if (nr_regions == 0)
         panic("no memory regions");
 }

@@ -1,2 +1,2 @@
 obj-y := init.o
-obj-y += arch/ drivers/ kernel/ model/
+obj-y += arch/ drivers/ kernel/ model/ lib/
